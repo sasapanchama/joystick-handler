@@ -2,17 +2,19 @@
 
 ## How to use
 
+``` script.ts
 import { joystickHandler } from "joystick-handler";
 
 const joystickHandler = new JoystickHandler();
 
-joystickHandler.$parent.addEventListener("touchmove", (event) => {
-  const { angle, velocity } = joystickHandler.handleTouchMoveEvent(event);
+joystickHandler.$parent.addEventListener("touchmove", (event) => {  
+  const { angle, velocity } = joystickHandler.handleTouchMoveEvent(event);  
 });
 
-joystickHandler.$parent.addEventListener("touchend", () => {
-  const { angle, velocity } = joystickHandler.handleTouchEndEvent();
+joystickHandler.$parent.addEventListener("touchend", () => {  
+  const { angle, velocity } = joystickHandler.handleTouchEndEvent();  
 });
+```
 
 ## Interface
 This is a TypeScript class that implements a joystick control. It creates two HTML elements: a parent element and a child element, representing the joystick handle. It calculates the center coordinates of the parent element, sets the limit of the joystick handle movement, and handles touch events to move the joystick handle and return joystick data. The class has two public methods, setSize and handleTouchEndEvent, and two private properties, centerX and centerY.
