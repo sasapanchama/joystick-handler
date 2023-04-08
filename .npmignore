@@ -3,3 +3,4 @@
 /src
 tsconfig.json
 jest.config.json
+webpack.config.json

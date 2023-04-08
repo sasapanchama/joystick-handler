@@ -8,18 +8,25 @@ or
 $ yarn add joystick-handler
 ```
 
-``` script.ts
-import { JoystickHandler } from "joystick-handler";
+``` index.html
+<div id="container"></div>
+```
 
-const joystickHandler = new JoystickHandler();
+
+``` script.ts
+import { JoystickHandler } from "joystick-handler";  
+
+const container = document.getElementById("container");  
+
+const joystickHandler = new JoystickHandler(container);  
 
 joystickHandler.$parent.addEventListener("touchmove", (event) => {  
   const { angle, velocity } = joystickHandler.handleTouchMoveEvent(event);  
-});
+});  
 
 joystickHandler.$parent.addEventListener("touchend", () => {  
   const { angle, velocity } = joystickHandler.handleTouchEndEvent();  
-});
+});  
 ```
 
 ## Interface

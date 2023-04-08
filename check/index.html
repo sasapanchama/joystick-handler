@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JoystickHandler Example</title>
+</head>
+<body>
+  <div id="container"></div>
+  <script src="../dist/cdn.bundle.js"></script>
+  <script>
+    const container = document.getElementById("container");
+    const joystickHandler = new JoystickHandler(container);
+    joystickHandler.$parent.addEventListener("touchmove", (event) => {
+      const { angle, velocity } = joystickHandler.handleTouchMoveEvent(event);
+    });
+    joystickHandler.$parent.addEventListener("touchend", () => {
+      const { angle, velocity } = joystickHandler.handleTouchEndEvent();
+    });
+  </script>
+</body>
+</html>

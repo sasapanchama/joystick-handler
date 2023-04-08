@@ -1,66 +1,73 @@
+// This interface defines the data structure for joystick inputs.
 export interface JoystickData {
-  angle: number | null; // Angle of joystick handle in radians (null if center)
-  velocity: number; // Distance of joystick handle from center normalized between 0 and 1
+  angle: number | null;
+  velocity: number;
 }
 
+// This class handles the joystick element.
 export class JoystickHandler {
-  $parent: HTMLElement; // Parent element that contains the joystick
-  $child: HTMLElement; // Child element that represents the joystick handle
-  private centerX: number; // X coordinate of center of parent element
-  private centerY: number; // Y coordinate of center of parent element
-  private limit: number; // Maximum distance from center that joystick handle can be moved
+  $container: HTMLElement;
+  $outerCircle: HTMLElement;
+  $innerCircle: HTMLElement;
+  centerX: number;
+  centerY: number;
+  limit: number;
 
-  constructor() {
-    // Create parent element and style it
-    this.$parent = document.createElement("div");
-    this.$parent.id = "JoystickHandler__Parent";
-    this.$parent.style.margin = "0 auto";
-    this.$parent.style.width = "240px";
-    this.$parent.style.height = "240px";
-    this.$parent.style.boxSizing = "border-box";
-    this.$parent.style.border = "4px solid black";
-    this.$parent.style.borderRadius = "120px";
-    this.$parent.style.position = "relative";
-    document.body.appendChild(this.$parent);
+  // The constructor takes an HTMLElement as an argument and creates the joystick element within it.
+  constructor(container: HTMLElement) {
+    this.$container = container;
 
-    // Create child element and style it
-    this.$child = document.createElement("div");
-    this.$child.id = "JoystickHandler__Child";
-    this.$child.style.width = "120px";
-    this.$child.style.height = "120px";
-    this.$child.style.boxSizing = "border-box";
-    this.$child.style.border = "4px solid black";
-    this.$child.style.borderRadius = "60px";
-    this.$child.style.backgroundColor = "black";
-    this.$child.style.position = "absolute";
-    this.$child.style.transform = "translate(50%, 50%)";
-    this.$parent.appendChild(this.$child);
+    // Create the outer circle element.
+    this.$outerCircle = document.createElement("div");
+    this.$outerCircle.id = "JoystickHandler__OuterCircle";
+    this.$outerCircle.style.margin = "0 auto";
+    this.$outerCircle.style.width = "240px";
+    this.$outerCircle.style.height = "240px";
+    this.$outerCircle.style.boxSizing = "border-box";
+    this.$outerCircle.style.border = "4px solid black";
+    this.$outerCircle.style.borderRadius = "120px";
+    this.$outerCircle.style.position = "relative";
+    this.$container.appendChild(this.$outerCircle);
 
-    // Calculate center coordinates and limit of joystick handle movement
-    this.centerX = this.$parent.getBoundingClientRect().left + this.$parent.clientWidth / 2;
-    this.centerY = this.$parent.getBoundingClientRect().top + this.$parent.clientHeight / 2;
-    this.limit = this.$parent.clientWidth / 2;
+    // Create the inner circle element.
+    this.$innerCircle = document.createElement("div");
+    this.$innerCircle.id = "JoystickHandler__InnerCircle";
+    this.$innerCircle.style.width = "120px";
+    this.$innerCircle.style.height = "120px";
+    this.$innerCircle.style.boxSizing = "border-box";
+    this.$innerCircle.style.border = "4px solid black";
+    this.$innerCircle.style.borderRadius = "60px";
+    this.$innerCircle.style.backgroundColor = "black";
+    this.$innerCircle.style.position = "absolute";
+    this.$innerCircle.style.transform = "translate(50%, 50%)";
+    this.$outerCircle.appendChild(this.$innerCircle);
 
-    // Bind touch event handlers to the instance of the class
+    // Calculate the center coordinates and the limit of the joystick element.
+    this.centerX = this.$outerCircle.getBoundingClientRect().left + this.$outerCircle.clientWidth / 2;
+    this.centerY = this.$outerCircle.getBoundingClientRect().top + this.$outerCircle.clientHeight / 2;
+    this.limit = this.$outerCircle.clientWidth / 2;
+
+    // Bind the event handler methods to the instance.
     this.handleTouchMoveEvent = this.handleTouchMoveEvent.bind(this);
     this.handleTouchEndEvent = this.handleTouchEndEvent.bind(this);
   }
 
-  // Set the size of the joystick
+  // This method sets the size of the joystick element.
   public setSize(size: number): void {
-    this.$parent.style.width = `${size}px`;
-    this.$parent.style.height = `${size}px`;
-    this.$parent.style.borderRadius = `${size / 2}px`;
-    this.$child.style.width = `${size / 2}px`;
-    this.$child.style.height = `${size / 2}px`;
-    this.$child.style.borderRadius = `${size / 4}px`;
+    this.$outerCircle.style.width = `${size}px`;
+    this.$outerCircle.style.height = `${size}px`;
+    this.$outerCircle.style.borderRadius = `${size / 2}px`;
+    this.$innerCircle.style.width = `${size / 2}px`;
+    this.$innerCircle.style.height = `${size / 2}px`;
+    this.$innerCircle.style.borderRadius = `${size / 4}px`;
     this.limit = size / 2;
   }
 
-  // Handle the touch move event and return joystick data
+  // This method handles the touch move event on the joystick element and returns the joystick data.
   public handleTouchMoveEvent(event: TouchEvent): JoystickData {
     const touch: Touch = event.touches[0] as Touch;
 
+    // Calculate the position of the inner circle and the joystick data.
     let touchX =
       Math.abs(touch.clientX - this.centerX) < this.limit
         ? touch.clientX - this.centerX
@@ -85,16 +92,15 @@ export class JoystickHandler {
     let radians = Math.acos(cos);
     let degrees = Math.floor((radians * 180) / Math.PI);
 
-    this.$child.style.left = `${touchX}px`;
-    this.$child.style.top = `${touchY}px`;
+    this.$innerCircle.style.left = `${touchX}px`;
+    this.$innerCircle.style.top = `${touchY}px`;
 
     return { angle: sin > 0 ? degrees : -degrees, velocity: absV2 };
   }
 
-  // Handle the touch end event and reset the joystick to center position
   public handleTouchEndEvent(): JoystickData {
-    this.$child.style.left = `0px`;
-    this.$child.style.top = `0px`;
+    this.$innerCircle.style.left = `0px`;
+    this.$innerCircle.style.top = `0px`;
     return { angle: null, velocity: 0 };
   }
 }
