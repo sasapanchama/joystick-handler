@@ -20,11 +20,11 @@ const container = document.getElementById("container");
 
 const joystickHandler = new JoystickHandler(container);  
 
-joystickHandler.$parent.addEventListener("touchmove", (event) => {  
+joystickHandler.$outerCircle.addEventListener("touchmove", (event) => {  
   const { angle, velocity } = joystickHandler.handleTouchMoveEvent(event);  
 });  
 
-joystickHandler.$parent.addEventListener("touchend", () => {  
+joystickHandler.$outerCircle.addEventListener("touchend", () => {  
   const { angle, velocity } = joystickHandler.handleTouchEndEvent();  
 });  
 ```
