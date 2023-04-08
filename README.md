@@ -2,8 +2,14 @@
 
 ## How to use
 
+``` sample.bash
+$ npm install joystick-handler
+or
+$ yarn add joystick-handler
+```
+
 ``` script.ts
-import { joystickHandler } from "joystick-handler";
+import { JoystickHandler } from "joystick-handler";
 
 const joystickHandler = new JoystickHandler();
 
