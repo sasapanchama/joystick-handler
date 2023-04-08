@@ -1,50 +1,79 @@
-// Define the structure of the data returned by the joystick handler
 export interface JoystickData {
-  angle: number;
-  velocity: number;
+  angle: number | null; // Angle of joystick handle in radians (null if center)
+  velocity: number; // Distance of joystick handle from center normalized between 0 and 1
 }
 
-// Define the JoystickHandler class
 export class JoystickHandler {
-  // Declare private variables to store the joystick UI elements and center coordinates
-  private uiParent: HTMLElement;
-  private uiChild: HTMLElement;
-  private centerX: number;
-  private centerY: number;
+  $parent: HTMLElement; // Parent element that contains the joystick
+  $child: HTMLElement; // Child element that represents the joystick handle
+  private centerX: number; // X coordinate of center of parent element
+  private centerY: number; // Y coordinate of center of parent element
+  private limit: number; // Maximum distance from center that joystick handle can be moved
 
-  // Constructor function to initialize the JoystickHandler instance with the UI elements
-  constructor(uiParent: HTMLElement, uiChild: HTMLElement) {
-    this.uiParent = uiParent;
-    this.uiChild = uiChild;
+  constructor() {
+    // Create parent element and style it
+    this.$parent = document.createElement("div");
+    this.$parent.id = "JoystickHandler__Parent";
+    this.$parent.style.margin = "0 auto";
+    this.$parent.style.width = "240px";
+    this.$parent.style.height = "240px";
+    this.$parent.style.boxSizing = "border-box";
+    this.$parent.style.border = "4px solid black";
+    this.$parent.style.borderRadius = "120px";
+    this.$parent.style.position = "relative";
+    document.body.appendChild(this.$parent);
 
-    // Calculate the center coordinates of the joystick UI controller element
-    this.centerX = uiParent.getBoundingClientRect().left + uiParent.clientWidth / 2;
-    this.centerY = uiParent.getBoundingClientRect().top + uiParent.clientHeight / 2;
+    // Create child element and style it
+    this.$child = document.createElement("div");
+    this.$child.id = "JoystickHandler__Child";
+    this.$child.style.width = "120px";
+    this.$child.style.height = "120px";
+    this.$child.style.boxSizing = "border-box";
+    this.$child.style.border = "4px solid black";
+    this.$child.style.borderRadius = "60px";
+    this.$child.style.backgroundColor = "black";
+    this.$child.style.position = "absolute";
+    this.$child.style.transform = "translate(50%, 50%)";
+    this.$parent.appendChild(this.$child);
 
-    // Bind the handleEvent method to the instance to ensure correct this binding
-    this.handleEvent = this.handleEvent.bind(this);
+    // Calculate center coordinates and limit of joystick handle movement
+    this.centerX = this.$parent.getBoundingClientRect().left + this.$parent.clientWidth / 2;
+    this.centerY = this.$parent.getBoundingClientRect().top + this.$parent.clientHeight / 2;
+    this.limit = this.$parent.clientWidth / 2;
+
+    // Bind touch event handlers to the instance of the class
+    this.handleTouchMoveEvent = this.handleTouchMoveEvent.bind(this);
+    this.handleTouchEndEvent = this.handleTouchEndEvent.bind(this);
   }
 
-  // Event handler function for touch events on the joystick UI element
-  public handleEvent(event: TouchEvent): JoystickData {
-    // Cast the touch event objects to Touch objects
+  // Set the size of the joystick
+  public setSize(size: number): void {
+    this.$parent.style.width = `${size}px`;
+    this.$parent.style.height = `${size}px`;
+    this.$parent.style.borderRadius = `${size / 2}px`;
+    this.$child.style.width = `${size / 2}px`;
+    this.$child.style.height = `${size / 2}px`;
+    this.$child.style.borderRadius = `${size / 4}px`;
+    this.limit = size / 2;
+  }
+
+  // Handle the touch move event and return joystick data
+  public handleTouchMoveEvent(event: TouchEvent): JoystickData {
     const touch: Touch = event.touches[0] as Touch;
 
-    // Calculate the x and y distance of the touch from the center of the joystick
     let touchX =
-      Math.abs(touch.clientX - this.centerX) < 35
+      Math.abs(touch.clientX - this.centerX) < this.limit
         ? touch.clientX - this.centerX
         : touch.clientX - this.centerX > 0
-        ? 35
-        : -35;
+        ? this.limit
+        : -this.limit;
     let touchY =
-      Math.abs(touch.clientY - this.centerY) < 35
+      Math.abs(touch.clientY - this.centerY) < this.limit
         ? touch.clientY - this.centerY
         : touch.clientY - this.centerY > 0
-        ? 35
-        : -35;
+        ? this.limit
+        : -this.limit;
 
-    // Calculate the angle and velocity of the touch relative to the center of the joystick
     const v1 = { x: 0, y: -1 };
     const v2 = { x: touchX, y: touchY };
     let dot = v1.x * v2.x + v1.y * v2.y;
@@ -56,11 +85,16 @@ export class JoystickHandler {
     let radians = Math.acos(cos);
     let degrees = Math.floor((radians * 180) / Math.PI);
 
-    // Update the position of the joystick control element
-    this.uiChild.style.left = `${touchX}px`;
-    this.uiChild.style.top = `${touchY}px`;
+    this.$child.style.left = `${touchX}px`;
+    this.$child.style.top = `${touchY}px`;
 
-    // Return the angle and velocity data
     return { angle: sin > 0 ? degrees : -degrees, velocity: absV2 };
+  }
+
+  // Handle the touch end event and reset the joystick to center position
+  public handleTouchEndEvent(): JoystickData {
+    this.$child.style.left = `0px`;
+    this.$child.style.top = `0px`;
+    return { angle: null, velocity: 0 };
   }
 }
